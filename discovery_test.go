@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	idp "github.com/Rock-liyi/p2pdb-log/identityprovider"
 	ks "github.com/Rock-liyi/p2pdb-log/keystore"
@@ -40,7 +41,7 @@ func TestPeeringId(t *testing.T) {
 
 }
 
-func TestIdentifyPeer(t *testing.T) {
+func TestIdentify(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	datastore := dssync.MutexWrap(NewIdentityDataStore(t))
@@ -60,6 +61,23 @@ func TestIdentifyPeer(t *testing.T) {
 		identities[i] = identity
 	}
 	debug.Dump(identities[1].ID)
+}
+
+func TestDiscovery(t *testing.T) {
+	//ctx := context.Background()
+	Discovery := NewDiscoveryFactory()
+	// create a new libp2p Host that listens on a random TCP port
+	h, err := Discovery.Create("/ip4/0.0.0.0/tcp/6666")
+	debug.Dump(h.ID().String())
+	if err != nil {
+		panic(err)
+	}
+	// setup local mDNS discovery
+	if err := Discovery.SetupDiscovery(h); err != nil {
+		panic(err)
+	}
+
+	time.Sleep(5 * time.Second)
 }
 
 // func TestPeeringService(t *testing.T) {

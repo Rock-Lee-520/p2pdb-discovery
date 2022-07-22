@@ -38,6 +38,13 @@ func NewDiscoveryFactory() *DiscoveryFactory {
 	return &DiscoveryFactory{}
 }
 
+func (d *DiscoveryFactory) Start(publicKey string) (host.Host, error) {
+
+	h, err := libp2p.New(libp2p.ListenAddrStrings(LISTEN_ADDRESS_STRINGS))
+
+	return h, err
+}
+
 // func (d *DiscoveryFactory) Connect() (Host string)  (Discovery, error){
 // 	return d,nil
 // }
