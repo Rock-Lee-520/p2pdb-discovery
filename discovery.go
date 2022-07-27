@@ -2,7 +2,7 @@ package discovery
 
 import (
 	"context"
-	"fmt"
+	"log"
 	"time"
 
 	"github.com/libp2p/go-libp2p"
@@ -25,6 +25,7 @@ type Discovery interface {
 }
 
 type DiscoveryFactory struct {
+	h host.Host
 }
 
 const LISTEN_ADDRESS_STRINGS = "/ip4/0.0.0.0/tcp/0"
@@ -32,6 +33,14 @@ const LISTEN_ADDRESS_STRINGS = "/ip4/0.0.0.0/tcp/0"
 // discoveryNotifee gets notified when we find a new peer via mDNS discovery
 type discoveryNotifee struct {
 	h host.Host
+}
+
+func (d *DiscoveryFactory) GetLocalPeerId() peer.ID {
+	return d.h.ID()
+}
+
+func (d *DiscoveryFactory) SetLocalPeerId(id peer.ID) {
+
 }
 
 func NewDiscoveryFactory() *DiscoveryFactory {
@@ -68,7 +77,7 @@ func (d *DiscoveryFactory) Create(host string) (host.Host, error) {
 	var options = libp2p.ListenAddrStrings(host)
 
 	h, err := libp2p.New(options)
-
+	d.h = h
 	return h, err
 }
 
@@ -77,6 +86,7 @@ func (d *DiscoveryFactory) Create(host string) (host.Host, error) {
 func (d *DiscoveryFactory) SetupDiscovery(h host.Host) error {
 	// setup mDNS discovery to find local peers
 	s := mdns.NewMdnsService(h, DiscoveryServiceTag, &discoveryNotifee{h: h})
+	log.Printf("local peer id is %s\n", h.ID())
 	return s.Start()
 }
 
@@ -84,9 +94,14 @@ func (d *DiscoveryFactory) SetupDiscovery(h host.Host) error {
 // the PubSub system will automatically start interacting with them if they also
 // support PubSub.
 func (n *discoveryNotifee) HandlePeerFound(pi peer.AddrInfo) {
-	fmt.Printf("discovered new peer %s\n", pi.ID.Pretty())
+	var localPeerId = n.h.ID()
+	if pi.ID.Pretty() != localPeerId.String() {
+		log.Printf("discovered new remote peer id %s\n", pi.ID.Pretty())
+	}
+
 	err := n.h.Connect(context.Background(), pi)
-	if err != nil {
-		fmt.Printf("error connecting to peer %s: %s\n", pi.ID.Pretty(), err)
+
+	if pi.ID.Pretty() != localPeerId.String() && err != nil {
+		log.Printf("error connecting to remote peer id %s: %s\n", pi.ID.Pretty(), err)
 	}
 }
