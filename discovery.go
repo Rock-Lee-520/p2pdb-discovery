@@ -38,12 +38,24 @@ func NewDiscoveryFactory() *DiscoveryFactory {
 	return &DiscoveryFactory{}
 }
 
-func (d *DiscoveryFactory) Start(publicKey string) (host.Host, error) {
-
-	h, err := libp2p.New(libp2p.ListenAddrStrings(LISTEN_ADDRESS_STRINGS))
-
-	return h, err
+func CreatePeerKey(key string) (string, error) {
+	return key, nil
 }
+
+func GetPublicKey(key string) (string, error) {
+	return key, nil
+}
+
+func GetPrivateKey(key string) (string, error) {
+	return key, nil
+}
+
+// func (d *DiscoveryFactory) Start(publicKey string) (host.Host, error) {
+
+// 	h, err := libp2p.New(libp2p.ListenAddrStrings(LISTEN_ADDRESS_STRINGS))
+
+// 	return h, err
+// }
 
 // func (d *DiscoveryFactory) Connect() (Host string)  (Discovery, error){
 // 	return d,nil
@@ -53,7 +65,9 @@ func (d *DiscoveryFactory) Create(host string) (host.Host, error) {
 	if host == "" {
 		host = LISTEN_ADDRESS_STRINGS
 	}
-	h, err := libp2p.New(libp2p.ListenAddrStrings(host))
+	var options = libp2p.ListenAddrStrings(host)
+
+	h, err := libp2p.New(options)
 
 	return h, err
 }
